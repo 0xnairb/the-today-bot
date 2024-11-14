@@ -1,0 +1,1 @@
+web: [[ $PROFILE = prod ]] && npm run deploy || npm run deploy:dev
