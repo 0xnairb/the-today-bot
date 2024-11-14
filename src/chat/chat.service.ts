@@ -112,6 +112,10 @@ export class ChatService {
     const roomId = msg.chat.id;
     const teleId = msg.chat.username;
 
+    // signin
+    await this.signin({ tid: `@${teleId}` });
+
+    // check room
     let room = await this.roomRepo.findOneBy({
       tid: `@${teleId}`,
     });
