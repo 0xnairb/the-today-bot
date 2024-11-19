@@ -1,8 +1,9 @@
-import { Body, Controller, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { EventDto, LoginDto } from './dto/chat.dto';
+import { EventEntity } from './entities/chat.entity';
 
 @UseGuards(ThrottlerGuard)
 @Controller()
@@ -21,6 +22,12 @@ export class ChatController {
     body.tid = req['user']['tid'];
     const res = await this.chatService.createEvent(body);
     return res;
+  }
+
+  @UseGuards(AuthGuard)
+  @Get('/event')
+  async getEvents(@Request() req): Promise<EventEntity[]> {
+    return await this.chatService.getEvent(req['user']['tid'])
   }
 
   @UseGuards(AuthGuard)

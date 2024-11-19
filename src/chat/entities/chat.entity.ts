@@ -52,13 +52,12 @@ export class EventEntity {
   @ManyToOne(() => UserEntity, (user) => user.events)
   @JoinColumn({ name: 'creator_id' })
   creator: UserEntity;
-  @ManyToMany(() => UserEntity, (user) => user.schedules, { eager: true })
-  @JoinTable({
-    name: 'events_participants',
-    joinColumn: { name: 'event_id' },
-    inverseJoinColumn: { name: 'participant_id' },
-  })
-  participants: UserEntity[];
+
+  @Column('simple-array', { array: true })
+  participants: string[];
+
+  @Column('simple-array', { array: true, nullable: true})
+  accepted: string[];
 }
 
 @Entity()

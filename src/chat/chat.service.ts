@@ -6,7 +6,7 @@ import {
   RoomEntity,
   UserEntity,
 } from './entities/chat.entity';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { EventDto, LoginDto, ParticipantDto } from './dto/chat.dto';
 import TelegramBot from 'node-telegram-bot-api';
@@ -15,9 +15,7 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 @Injectable()
 export class ChatService {
   private readonly logger = new Logger(ChatService.name);
-  private readonly bot = new TelegramBot(process.env.BOT_SECRET, {
-    polling: true,
-  });
+  private readonly bot = new TelegramBot(process.env.BOT_SECRET);
 
   constructor(
     @InjectRepository(UserEntity)
@@ -72,7 +70,7 @@ export class ChatService {
         .map((item) => item)
         .map(async (item) => {
           const participant = new ParticipantDto();
-          participant.tid = item;
+          participant.tid = item.slice(1);
           participant.status = await this.userRepo.existsBy({ tid: item });
           return participant;
         }),
@@ -85,7 +83,7 @@ export class ChatService {
     const ee = new EventEntity();
     ee.description = req.description;
     ee.creator = creator;
-    ee.participants = [creator];
+    ee.participants = participants.map((item) => item.tid);
 
     const event = await this.eventRepo.save(ee);
 
@@ -99,12 +97,25 @@ export class ChatService {
     const event = await this.eventRepo.findOneBy({ id });
     const participant = await this.userRepo.findOneByOrFail({ tid });
 
-    if (
-      event.participants.findIndex((item) => item.id === participant.id) === -1
-    ) {
-      event.participants.push(participant);
-      await this.eventRepo.save(event);
+    console.log(event, participant)
+
+    if (!event.accepted) {
+      event.accepted = [tid];
+    } else {
+      if (event.accepted.indexOf(tid) === -1) {
+        event.accepted.push(tid);
+      }
     }
+
+    return this.eventRepo.save(event);
+  }
+
+  async getEvent(tid: string): Promise<EventEntity[]> {
+    return this.eventRepo.find({
+      where: {
+        participants: Like(`%${tid}%`),
+      }
+    })
   }
 
   /*********************************** Bot Functions ***********************************/
@@ -113,16 +124,16 @@ export class ChatService {
     const teleId = msg.chat.username;
 
     // signin
-    await this.signin({ tid: `@${teleId}` });
+    await this.signin({ tid: teleId });
 
     // check room
     let room = await this.roomRepo.findOneBy({
-      tid: `@${teleId}`,
+      tid: teleId,
     });
 
     if (!room) {
       room = await this.roomRepo.save({
-        tid: `@${teleId}`,
+        tid: teleId,
         rid: roomId,
       });
     } else {
@@ -141,11 +152,11 @@ export class ChatService {
       const teleId = msg.chat.username;
 
       let room = await this.roomRepo.findOneBy({
-        tid: `@${teleId}`,
+        tid: `${teleId}`,
       });
 
       const event = await this.createEvent({
-        tid: `@${teleId}`,
+        tid: `${teleId}`,
         description: text.trim(),
       });
 
@@ -178,16 +189,16 @@ ${event.participants
       const event = await this.eventRepo.findOneByOrFail({
         id: text.trim(),
       });
-      await this.accept(event.id, `@${teleId}`);
+      await this.accept(event.id, `${teleId}`);
 
       // broadcast message to all participants (except this user)
-      for (const participant of event.participants) {
+      for (const tid of event.participants) {
         const room = await this.roomRepo.findOneBy({
-          tid: participant.tid
+          tid
         });
 
         if (room) {
-          this.bot.sendMessage(room.rid, `@${teleId} accepted the event ${event.id}`)
+          this.bot.sendMessage(room.rid, `${teleId} accepted the event ${event.id}`)
         }
       }
     } catch (e) {
