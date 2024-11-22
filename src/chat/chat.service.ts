@@ -50,11 +50,17 @@ export class ChatService {
     });
 
     if (!user) {
-      user = await this.userRepo.save({
-        tid: req.tid,
-      });
+      user = new UserEntity();
+      user.tid = req.tid;
+      const auth = new AuthEntity();
+      auth.accessToken = req.oauth_token;
+      auth.user = user;
+      user.auth = auth;
+    } else {
+      user.auth.accessToken = req.oauth_token;
     }
 
+    user = await this.userRepo.save(user);
     return this.jwtService.signAsync({ id: user.id, tid: user.tid });
   }
 
@@ -124,7 +130,10 @@ export class ChatService {
     const teleId = msg.chat.username;
 
     // signin
-    await this.signin({ tid: teleId });
+    await this.signin({
+      tid: teleId,
+      oauth_token: ''
+    });
 
     // check room
     let room = await this.roomRepo.findOneBy({
@@ -156,8 +165,9 @@ export class ChatService {
       });
 
       const event = await this.createEvent({
-        tid: `${teleId}`,
         description: text.trim(),
+        tid: '',
+        oauth_token: ''
       });
 
       this.bot.sendMessage(

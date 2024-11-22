@@ -2,7 +2,6 @@ import {
   Column,
   Entity,
   JoinColumn,
-  JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
@@ -21,7 +20,7 @@ export class UserEntity {
   @Column()
   tid: string;
 
-  @OneToOne(() => AuthEntity, (auth) => auth.user)
+  @OneToOne(() => AuthEntity, (auth) => auth.user, { eager: true, cascade: true })
   auth: Relation<AuthEntity>;
   @OneToMany(() => EventEntity, (event) => event.creator)
   events: EventEntity[];
@@ -39,7 +38,7 @@ export class AuthEntity {
   user: Relation<UserEntity>;
   @Column({ name: 'access_token' })
   accessToken: string;
-  @Column({ name: 'refresh_token' })
+  @Column({ name: 'refresh_token', nullable: true })
   refreshToken: string;
 }
 

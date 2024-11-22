@@ -1,5 +1,6 @@
 export class LoginDto {
   tid: string;
+  oauth_token: string;
 }
 
 export class EventDto extends LoginDto {
