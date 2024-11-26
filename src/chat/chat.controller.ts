@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Request, Sse, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Logger, Param, Post, Request, Sse, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 @UseGuards(ThrottlerGuard)
 @Controller()
 export class ChatController {
+  private readonly logger = new Logger(ChatController.name);
   constructor(private readonly chatService: ChatService) {}
 
   @Post('/login')
@@ -26,6 +27,7 @@ export class ChatController {
   @Post('/event')
   async createEvent(@Request() req, @Body() body: EventDto) {
     body.tid = req['user']['tid'];
+    this.logger.log(body);
     const res = await this.chatService.createEvent(body);
     return res;
   }
