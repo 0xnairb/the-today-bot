@@ -101,7 +101,7 @@ export class ChatService {
     const ee = new EventEntity();
     ee.description = req.description;
     ee.creator = creator;
-    ee.participants = participants.map((item) => item.tid);
+    ee.participants = [creator.tid, ...participants.map((item) => item.tid)];
 
     const event = await this.eventRepo.save(ee);
 

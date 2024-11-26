@@ -27,7 +27,6 @@ export class ChatController {
   @Post('/event')
   async createEvent(@Request() req, @Body() body: EventDto) {
     body.tid = req['user']['tid'];
-    this.logger.log(body);
     const res = await this.chatService.createEvent(body);
     return res;
   }
