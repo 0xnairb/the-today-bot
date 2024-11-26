@@ -157,6 +157,10 @@ export class ChatService {
     });
   }
 
+  async getEvents(): Promise<EventEntity[]> {
+    return this.eventRepo.find();
+  }
+
   async findCalendarList(
     access_token: string,
     gmail: string,
