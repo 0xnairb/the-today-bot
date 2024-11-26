@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToMany,
@@ -57,6 +58,15 @@ export class EventEntity {
 
   @Column('simple-array', { array: true, nullable: true})
   accepted: string[];
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @Column({ name: 'suggested_start_time', nullable: true })
+  suggestedStartTime: Date;
+
+  @Column({ name: 'suggested_end_time', nullable: true })
+  suggestedEndTime: Date;
 }
 
 @Entity()
