@@ -17,6 +17,11 @@ export class ChatController {
     return { access_token };
   }
 
+  @Get('/events')
+  async getAllEvents(@Request() req): Promise<EventEntity[]> {
+    return await this.chatService.getEvents()
+  }
+
   @UseGuards(AuthGuard)
   @Post('/event')
   async createEvent(@Request() req, @Body() body: EventDto) {
