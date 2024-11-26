@@ -49,7 +49,7 @@ export class EventEntity {
   id: string;
   @Column()
   description: string;
-  @ManyToOne(() => UserEntity, (user) => user.events)
+  @ManyToOne(() => UserEntity, (user) => user.events, { eager: true })
   @JoinColumn({ name: 'creator_id' })
   creator: UserEntity;
 
