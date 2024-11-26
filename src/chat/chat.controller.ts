@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Request, Sse, UseGuards } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { EventDto, LoginDto } from './dto/chat.dto';
 import { EventEntity } from './entities/chat.entity';
+import { Observable } from 'rxjs';
 
 @UseGuards(ThrottlerGuard)
 @Controller()
@@ -34,5 +35,10 @@ export class ChatController {
   @Post('/event/:id/accept')
   async accept(@Request() req, @Param('id') id: string) {
     await this.chatService.accept(id, req['user']['tid']);
+  }
+
+  @Sse('/notification')
+  registerNotification(): Observable<MessageEvent<string>> {
+    return this.chatService.notification();
   }
 }
