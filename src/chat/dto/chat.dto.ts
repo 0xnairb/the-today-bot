@@ -1,5 +1,6 @@
 export class LoginDto {
   tid: string;
+  email: string;
   oauth_token: string;
 }
 

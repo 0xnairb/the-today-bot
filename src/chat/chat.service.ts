@@ -64,6 +64,7 @@ export class ChatService {
     if (!user) {
       user = new UserEntity();
       user.tid = req.tid;
+      user.email = req.email;
       const auth = new AuthEntity();
       auth.accessToken = req.oauth_token;
       auth.user = user;
@@ -191,6 +192,7 @@ export class ChatService {
     // signin
     await this.signin({
       tid: teleId,
+      email: '',
       oauth_token: '',
     });
 
@@ -226,6 +228,7 @@ export class ChatService {
       const event = await this.createEvent({
         description: text.trim(),
         tid: '',
+        email: '',
         oauth_token: '',
       });
 
